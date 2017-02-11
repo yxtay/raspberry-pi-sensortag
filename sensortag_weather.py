@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from bluepy.sensortag import SensorTag
 
 
@@ -18,7 +20,7 @@ def get_readings(tag):
     # IR sensor
     readings["ir_temp"], readings["ir"] = tag.IRtemperature.read()
     # humidity sensor
-    readings["humidty_temp"], readings["humidity"] = tag.humidity.enable()
+    readings["humidty_temp"], readings["humidity"] = tag.humidity.read()
     # barometer
     readings["baro_temp"], readings["pressure"] = tag.barometer.read()
     # lightmeter
@@ -29,7 +31,6 @@ def get_readings(tag):
 
 
 def main():
-    from __future__ import print_function
     import time
     import sys
     import argparse
@@ -54,3 +55,6 @@ def main():
 
     tag.disconnect()
     del tag
+
+if __name__ == "__main__":
+    main()
