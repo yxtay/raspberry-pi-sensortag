@@ -119,10 +119,10 @@ def main():
             continue
 
         # print readings
-        print("IR temperature:\t\t{}, reading:\t{}".format(readings["ir_temp"], readings["ir"]))
-        print("Humidity temperature:\t{}, reading:\t{}".format(readings["humidity_temp"], readings["humidity"]))
-        print("Barometer temperature:\t{}, reading:\t{}".format(readings["baro_temp"], readings["pressure"]))
-        print("Light:\t{}".format(readings["light"]))
+        print("IR reading:\t\t{}, temperature:\t{}".format(readings["ir"], readings["ir_temp"]))
+        print("Humidity reading:\t{}, temperature:\t{}".format(readings["humidity"], readings["humidity_temp"]))
+        print("Barometer reading:\t{}, temperature:\t{}".format(readings["pressure"], readings["baro_temp"]))
+        print("Luxometer reading:\t{}".format(readings["light"]))
 
         worksheet = append_readings(worksheet, readings)
         # login if necessary.
