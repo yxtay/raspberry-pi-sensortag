@@ -119,6 +119,7 @@ def main():
             continue
 
         # print readings
+        print("Time:\t{}".format(datetime.datetime.now()))
         print("IR reading:\t\t{}, temperature:\t{}".format(readings["ir"], readings["ir_temp"]))
         print("Humidity reading:\t{}, temperature:\t{}".format(readings["humidity"], readings["humidity_temp"]))
         print("Barometer reading:\t{}, temperature:\t{}".format(readings["pressure"], readings["baro_temp"]))
