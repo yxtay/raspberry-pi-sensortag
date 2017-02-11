@@ -11,7 +11,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
-FREQUENCY_SECONDS = 50
+FREQUENCY_SECONDS = 60
 
 
 def enable_sensors(tag):
@@ -55,8 +55,13 @@ def get_readings(tag):
 
 
 def reconnect(tag):
-    tag.connect(tag.deviceAddr, tag.addrType)
-    enable_sensors(tag)
+    try:
+        tag.connect(tag.deviceAddr, tag.addrType)
+        enable_sensors(tag)
+    except Exception as e:
+        print("Unable to reconnect to SensorTag.")
+        print(e)
+        sys.exit(1)
 
 
 def login_open_sheet(oauth_key_file, spreadsheet):
@@ -126,7 +131,11 @@ def main():
             continue
 
         print()
-        tag.waitForNotifications(FREQUENCY_SECONDS)
+        try:
+            tag.waitForNotifications(FREQUENCY_SECONDS)
+        except Exception as e:
+            print(e)
+
 
     tag.disconnect()
     del tag
