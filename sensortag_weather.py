@@ -25,24 +25,38 @@ def enable_sensors(tag):
     tag.lightmeter.enable()
     # tag.battery.enable()
 
+    # Some sensors (e.g., temperature, accelerometer) need some time for initialization.
+    # Not waiting here after enabling a sensor, the first read value might be empty or incorrect.
+    time.sleep(1.0)
+
 
 def get_readings(tag):
-    # IR sensor
-    ir_temp, ir = tag.IRtemperature.read()
-    # humidity sensor
-    humidty_temp, humidity = tag.humidity.read()
-    # barometer
-    baro_temp, pressure = tag.barometer.read()
-    # lightmeter
-    light = tag.lightmeter.read()
-    # battery
-    # readings["battery"] = tag.battery.read()
+    try:
+        # IR sensor
+        ir_temp, ir = tag.IRtemperature.read()
+        # humidity sensor
+        humidty_temp, humidity = tag.humidity.read()
+        # barometer
+        baro_temp, pressure = tag.barometer.read()
+        # lightmeter
+        light = tag.lightmeter.read()
+        # battery
+        # readings["battery"] = tag.battery.read()
 
-    readings = {"ir_temp": round(ir_temp, 2), "ir": round(ir, 2),
-                "humidity_temp": round(humidty_temp, 2), "humidity": round(humidity, 2),
-                "baro_temp": round(baro_temp, 2), "pressure": round(pressure, 2),
-                "light": round(light, 2)}
-    return readings
+        readings = {"ir_temp": round(ir_temp, 2), "ir": round(ir, 2),
+                    "humidity_temp": round(humidty_temp, 2), "humidity": round(humidity, 2),
+                    "baro_temp": round(baro_temp, 2), "pressure": round(pressure, 2),
+                    "light": round(light, 2)}
+        return readings
+    except Exception as e:
+        print("Unable to take sensor readings.")
+        print(e)
+        return {}
+
+
+def reconnect(tag):
+    tag.connect(tag.deviceAddr, tag.addrType)
+    enable_sensors(tag)
 
 
 def login_open_sheet(oauth_key_file, spreadsheet):
@@ -53,12 +67,12 @@ def login_open_sheet(oauth_key_file, spreadsheet):
         gc = gspread.authorize(credentials)
         worksheet = gc.open(spreadsheet).sheet1
         return worksheet
-    except Exception as ex:
+    except Exception as e:
         print('Unable to login and get spreadsheet. '
               'Check OAuth credentials, spreadsheet name, '
               'and make sure spreadsheet is shared to the '
               'client_email address in the OAuth .json file!')
-        print('Google sheet login failed with error:', ex)
+        print('Google sheet login failed with error:', e)
         sys.exit(1)
 
 
@@ -72,11 +86,11 @@ def append_readings(worksheet, readings):
                               readings["light"]))
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
         return worksheet
-    except Exception as ex:
+    except Exception as e:
         # Error appending data, most likely because credentials are stale.
         # Null out the worksheet so a login is performed at the top of the loop.
         print("Append error, logging in again")
-        print(ex)
+        print(e)
         return None
 
 
@@ -88,20 +102,16 @@ def main():
     # enable sensors
     enable_sensors(tag)
 
-    # Some sensors (e.g., temperature, accelerometer) need some time for initialization.
-    # Not waiting here after enabling a sensor, the first read value might be empty or incorrect.
-    time.sleep(1.0)
-
     print('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
     print('Press Ctrl-C to quit.')
-    worksheet = None
+    worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
     while True:
-        # login if necessary.
-        if worksheet is None:
-            worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
-
         # get sensor readings
         readings = get_readings(tag)
+        if not readings:
+            print("SensorTag disconnected. Reconnecting.")
+            reconnect(tag)
+            continue
 
         # print readings
         print("IR temperature:\t{}, reading:\t{}".format(readings["ir_temp"], readings["ir"]))
@@ -110,6 +120,10 @@ def main():
         print("Light:\t{}".format(readings["light"]))
 
         worksheet = append_readings(worksheet, readings)
+        # login if necessary.
+        if worksheet is None:
+            worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
+            continue
 
         print()
         tag.waitForNotifications(FREQUENCY_SECONDS)
