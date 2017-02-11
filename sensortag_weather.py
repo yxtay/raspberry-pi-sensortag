@@ -45,7 +45,6 @@ def get_readings(tag):
     return readings
 
 
-
 def login_open_sheet(oauth_key_file, spreadsheet):
     """Connect to Google Docs spreadsheet and return the first worksheet."""
     try:
@@ -73,10 +72,11 @@ def append_readings(worksheet, readings):
                               readings["light"]))
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
         return worksheet
-    except:
+    except Exception as ex:
         # Error appending data, most likely because credentials are stale.
         # Null out the worksheet so a login is performed at the top of the loop.
         print("Append error, logging in again")
+        print(ex)
         return None
 
 
