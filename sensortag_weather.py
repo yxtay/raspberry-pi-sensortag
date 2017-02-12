@@ -4,6 +4,7 @@ import datetime
 import sys
 import time
 
+from bluepy.btle import BTLEException
 from bluepy.sensortag import SensorTag
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -11,7 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
-FREQUENCY_SECONDS = 55  # it takes about 5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 56  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
@@ -38,17 +39,19 @@ def get_readings(tag):
         humidty_temp, humidity = tag.humidity.read()
         # barometer
         baro_temp, pressure = tag.barometer.read()
-        # lightmeter
+        # luxmeter
         light = tag.lightmeter.read()
         # battery
         # readings["battery"] = tag.battery.read()
 
-        readings = {"ir_temp": round(ir_temp, 2), "ir": round(ir, 2),
-                    "humidity_temp": round(humidty_temp, 2), "humidity": round(humidity, 2),
-                    "baro_temp": round(baro_temp, 2), "pressure": round(pressure, 2),
-                    "light": round(light, 2)}
+        readings = {"ir_temp": ir_temp, "ir": ir,
+                    "humidity_temp": humidty_temp, "humidity": humidity,
+                    "baro_temp": baro_temp, "pressure": pressure,
+                    "light": light}
+        readings = {key: round(value, 2) for key, value in readings.items()}
         return readings
-    except Exception as e:
+
+    except BTLEException as e:
         print("Unable to take sensor readings.")
         print(e)
         return {}
@@ -60,8 +63,7 @@ def reconnect(tag):
         enable_sensors(tag)
     except Exception as e:
         print("Unable to reconnect to SensorTag.")
-        print(e)
-        sys.exit(1)
+        raise e
 
 
 def login_open_sheet(oauth_key_file, spreadsheet):
@@ -93,23 +95,21 @@ def append_readings(worksheet, readings):
         return worksheet
     except Exception as e:
         # Error appending data, most likely because credentials are stale.
-        # Null out the worksheet so a login is performed at the top of the loop.
+        # Null out the worksheet so a login is performed.
         print("Append error, logging in again")
         print(e)
         return None
 
 
 def main():
-    # connect to sensortag
     print('Connecting to ' + SENSORTAG_ADDRESS)
     tag = SensorTag(SENSORTAG_ADDRESS)
-
-    # enable sensors
     enable_sensors(tag)
+
+    worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
 
     print('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
     print('Press Ctrl-C to quit.')
-    worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
     while True:
         # get sensor readings
         readings = get_readings(tag)
@@ -123,7 +123,7 @@ def main():
         print("IR reading:\t\t{}, temperature:\t{}".format(readings["ir"], readings["ir_temp"]))
         print("Humidity reading:\t{}, temperature:\t{}".format(readings["humidity"], readings["humidity_temp"]))
         print("Barometer reading:\t{}, temperature:\t{}".format(readings["pressure"], readings["baro_temp"]))
-        print("Luxometer reading:\t{}".format(readings["light"]))
+        print("Luxmeter reading:\t{}".format(readings["light"]))
 
         worksheet = append_readings(worksheet, readings)
         # login if necessary.
@@ -131,11 +131,11 @@ def main():
             worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
             continue
 
-        print()
         try:
             tag.waitForNotifications(FREQUENCY_SECONDS)
-        except Exception as e:
+        except BTLEException as e:
             print(e)
+        print()
 
 
     tag.disconnect()
