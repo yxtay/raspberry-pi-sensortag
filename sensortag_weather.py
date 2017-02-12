@@ -12,7 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
-FREQUENCY_SECONDS = 56  # it takes about 4-5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 55  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
