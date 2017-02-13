@@ -37,7 +37,7 @@ def get_readings(tag):
         # IR sensor
         readings["ir_temp"], readings["ir"] = tag.IRtemperature.read()
         # humidity sensor
-        readings["humidty_temp"], readings["humidity"] = tag.humidity.read()
+        readings["humidity_temp"], readings["humidity"] = tag.humidity.read()
         # barometer
         readings["baro_temp"], readings["pressure"] = tag.barometer.read()
         # luxmeter
