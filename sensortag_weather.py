@@ -99,7 +99,7 @@ def append_readings(worksheet, readings):
 
 
 def main():
-    print('Connecting to ' + SENSORTAG_ADDRESS)
+    print('Connecting to {}'.format(SENSORTAG_ADDRESS))
     tag = SensorTag(SENSORTAG_ADDRESS)
     enable_sensors(tag)
 
