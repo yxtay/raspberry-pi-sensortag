@@ -58,6 +58,7 @@ def reconnect(tag):
     try:
         tag.connect(tag.deviceAddr, tag.addrType)
         enable_sensors(tag)
+
     except Exception as e:
         print("Unable to reconnect to SensorTag.")
         raise e
@@ -71,6 +72,7 @@ def login_open_sheet(oauth_key_file, spreadsheet):
         gc = gspread.authorize(credentials)
         worksheet = gc.open(spreadsheet).sheet1
         return worksheet
+
     except Exception as e:
         print('Unable to login and get spreadsheet. '
               'Check OAuth credentials, spreadsheet name, '
@@ -90,6 +92,7 @@ def append_readings(worksheet, readings):
                               readings["light"]))
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
         return worksheet
+
     except Exception as e:
         # Error appending data, most likely because credentials are stale.
         # Null out the worksheet so a login is performed.
@@ -128,11 +131,8 @@ def main():
             worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
             continue
 
-        try:
-            tag.waitForNotifications(FREQUENCY_SECONDS)
-        except BTLEException as e:
-            print(e)
         print()
+        time.sleep(FREQUENCY_SECONDS)
 
 
 if __name__ == "__main__":
