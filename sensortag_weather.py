@@ -12,7 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
-FREQUENCY_SECONDS = 55  # it takes about 4-5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 55.5  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
@@ -33,21 +33,18 @@ def enable_sensors(tag):
 
 def get_readings(tag):
     try:
+        readings = {}
         # IR sensor
-        ir_temp, ir = tag.IRtemperature.read()
+        readings["ir_temp"], readings["ir" = tag.IRtemperature.read()
         # humidity sensor
-        humidty_temp, humidity = tag.humidity.read()
+        readings["humidty_temp"], readings["humidity"] = tag.humidity.read()
         # barometer
-        baro_temp, pressure = tag.barometer.read()
+        readings["baro_temp"], readings["pressure"] = tag.barometer.read()
         # luxmeter
-        light = tag.lightmeter.read()
+        readings["light"] = tag.lightmeter.read()
         # battery
         # readings["battery"] = tag.battery.read()
 
-        readings = {"ir_temp": ir_temp, "ir": ir,
-                    "humidity_temp": humidty_temp, "humidity": humidity,
-                    "baro_temp": baro_temp, "pressure": pressure,
-                    "light": light}
         readings = {key: round(value, 2) for key, value in readings.items()}
         return readings
 
@@ -137,9 +134,6 @@ def main():
             print(e)
         print()
 
-
-    tag.disconnect()
-    del tag
 
 if __name__ == "__main__":
     main()
