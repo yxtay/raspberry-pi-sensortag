@@ -9,6 +9,8 @@ from bluepy.sensortag import SensorTag
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+
+# configurations to be set accordingly
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
@@ -17,6 +19,7 @@ FREQUENCY_SECONDS = 54.5  # it takes about 4-5 seconds to obtain readings and up
 
 
 def enable_sensors(tag):
+    """Enable sensors so that readings can be made."""
     tag.IRtemperature.enable()
     tag.accelerometer.enable()
     tag.humidity.enable()
@@ -33,6 +36,7 @@ def enable_sensors(tag):
 
 
 def get_readings(tag):
+    """Get sensor readings and collate them in a dictionary."""
     try:
         readings = {}
         # IR sensor
