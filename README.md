@@ -18,6 +18,7 @@ cd raspberry-pi-sensortag
 
 # install dependencies
 sudo apt install python-pip virtualenvwrapper libglib2.0-dev
+mkvirtualenv sensortag  # OPTIONAL: create virtualenv
 pip install -r requirements.txt
 ```
 
@@ -47,13 +48,13 @@ Follow the [`gspread` documentation instructions to obtain OAuth2 credentials fr
 
 Set `GDOCS_OAUTH_JSON` to the name of the file.
 
-Note the email address under `client_email` in the credential file, which is required in the next section.
+Open up the credentials file and note the email address under `client_email`, which is required in the next section.
 
 ### `GDOCS_SPREADSHEET_NAME` and `GDOCS_WORKSHEET_NAME`
 
 Create a Google Spreadsheet and name it as you desire. Set `GDOCS_SPREADSHEET_NAME` to the name of the spreadsheet.
 
-Rename the default worksheet as you desire. Otherwise, it shall be "Sheet1" by default. Set `GDOCS_WORKSHEET_NAME` to the name of the worksheet.
+Rename the worksheet as you desire. Otherwise, it shall be "Sheet1" by default. Set `GDOCS_WORKSHEET_NAME` to the name of the worksheet.
 
 Share the spreadsheet with `client_email` in the credential file from the previous section.
 
@@ -65,5 +66,6 @@ For approximiately per minute readings, set `FREQUENCY_SECONDS` to 55.
 ## Run script
 
 ```bash
+workon sensortag  # activate virtualenv
 python sensortag_weather.py
 ```
