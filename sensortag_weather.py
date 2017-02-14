@@ -12,6 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
+GDOCS_WORKSHEET_NAME = "data"
 FREQUENCY_SECONDS = 54.5  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
@@ -64,13 +65,13 @@ def reconnect(tag):
         raise e
 
 
-def login_open_sheet(oauth_key_file, spreadsheet):
+def login_open_sheet(oauth_key_file, spreadsheet_name, worksheet_name):
     """Connect to Google Docs spreadsheet and return the first worksheet."""
     try:
         scope = ['https://spreadsheets.google.com/feeds']
         credentials = ServiceAccountCredentials.from_json_keyfile_name(oauth_key_file, scope)
         gc = gspread.authorize(credentials)
-        worksheet = gc.open(spreadsheet).sheet1
+        worksheet = gc.open(spreadsheet_name).worksheet(worksheet_name)
         return worksheet
 
     except Exception as e:
@@ -106,7 +107,7 @@ def main():
     tag = SensorTag(SENSORTAG_ADDRESS)
     enable_sensors(tag)
 
-    worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
+    worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME, GDOCS_WORKSHEET_NAME)
 
     print('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
     print('Press Ctrl-C to quit.')
@@ -128,7 +129,7 @@ def main():
         worksheet = append_readings(worksheet, readings)
         # login if necessary.
         if worksheet is None:
-            worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME)
+            worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME, GDOCS_WORKSHEET_NAME)
             continue
 
         print()
