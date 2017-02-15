@@ -44,7 +44,7 @@ Set `SENSORTAG_ADDRESS` accordingly.
 
 ### `GDOCS_OAUTH_JSON`
 
-Follow the [`gspread` documentation instructions to obtain OAuth2 credentials from Google Developers Console](OAuth2 credentials from Google Developers Console).
+Follow the [`gspread` documentation instructions to obtain OAuth2 credentials from Google Developers Console](http://gspread.readthedocs.io/en/latest/oauth2.html).
 
 Set `GDOCS_OAUTH_JSON` to the name of the file.
 
