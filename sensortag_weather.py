@@ -51,9 +51,11 @@ def get_readings(tag):
         readings["light"] = tag.lightmeter.read()
         # battery
         # readings["battery"] = tag.battery.read()
-
+        # round to 2 decimal places for all readings
         readings = {key: round(value, 2) for key, value in readings.items()}
-        if readings["humidity_temp"] < readings["ir_temp"] - 5:
+        # remove erroneous readings
+        if (readings["humidity_temp"] < readings["ir_temp"] - 2 or
+                readings["humidity_temp"] > readings["ir_temp"] + 2):
             readings["humidity_temp"] = ''
         if readings["humidity"] < 1 or readings["humidity"] > 99:
             readings["humidity"] = ''
@@ -95,11 +97,8 @@ def login_open_sheet(oauth_key_file, spreadsheet_name, worksheet_name):
 def append_readings(worksheet, readings):
     # Append the data in the spreadsheet, including a timestamp
     try:
-        worksheet.append_row((datetime.datetime.now(),
-                              readings["ir_temp"], readings["ir"],
-                              readings["humidity_temp"], readings["humidity"],
-                              readings["baro_temp"], readings["pressure"],
-                              readings["light"]))
+        columns = ["ir_temp", "humidity_temp", "baro_temp", "ir", "humidity", "pressure", "light"]
+        worksheet.append_row([datetime.datetime.now()] + [readings[col] for col in columns])
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
         return worksheet
 
