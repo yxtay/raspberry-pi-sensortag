@@ -54,9 +54,9 @@ def get_readings(tag):
 
         readings = {key: round(value, 2) for key, value in readings.items()}
         if readings["humidity_temp"] < 10:
-            readings["humidity_temp"] = None
+            readings["humidity_temp"] = ''
         if readings["humidity"] > 99:
-            readings["humidity_temp"] = None
+            readings["humidity"] = ''
         return readings
 
     except BTLEException as e:
