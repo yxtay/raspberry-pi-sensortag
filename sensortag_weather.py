@@ -53,9 +53,9 @@ def get_readings(tag):
         # readings["battery"] = tag.battery.read()
 
         readings = {key: round(value, 2) for key, value in readings.items()}
-        if readings["humidity_temp"] < 10:
+        if readings["humidity_temp"] < readings["ir_temp"] - 5:
             readings["humidity_temp"] = ''
-        if readings["humidity"] > 99:
+        if readings["humidity"] < 1 or readings["humidity"] > 99:
             readings["humidity"] = ''
         return readings
 
