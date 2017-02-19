@@ -15,7 +15,7 @@ SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
 GDOCS_WORKSHEET_NAME = "data"
-FREQUENCY_SECONDS = 53.4  # it takes about 4-5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 54.4  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
@@ -38,8 +38,6 @@ def enable_sensors(tag):
 def get_readings(tag):
     """Get sensor readings and collate them in a dictionary."""
     try:
-        enable_sensors(tag)
-
         readings = {}
         # IR sensor
         readings["ir_temp"], readings["ir"] = tag.IRtemperature.read()
@@ -51,14 +49,9 @@ def get_readings(tag):
         readings["light"] = tag.lightmeter.read()
         # battery
         # readings["battery"] = tag.battery.read()
+
         # round to 2 decimal places for all readings
         readings = {key: round(value, 2) for key, value in readings.items()}
-        # remove erroneous readings
-        if (readings["humidity_temp"] < readings["ir_temp"] - 2 or
-                readings["humidity_temp"] > readings["ir_temp"] + 2):
-            readings["humidity_temp"] = ''
-        if readings["humidity"] < 1 or readings["humidity"] > 99:
-            readings["humidity"] = ''
         return readings
 
     except BTLEException as e:
@@ -70,6 +63,7 @@ def get_readings(tag):
 def reconnect(tag):
     try:
         tag.connect(tag.deviceAddr, tag.addrType)
+        enable_sensors(tag)
 
     except Exception as e:
         print("Unable to reconnect to SensorTag.")
@@ -97,6 +91,13 @@ def login_open_sheet(oauth_key_file, spreadsheet_name, worksheet_name):
 def append_readings(worksheet, readings):
     # Append the data in the spreadsheet, including a timestamp
     try:
+        # remove erroneous readings
+        if (readings["humidity_temp"] < readings["ir_temp"] - 5 or
+                    readings["humidity_temp"] > readings["ir_temp"] + 5):
+            readings["humidity_temp"] = ''
+        if readings["humidity"] < 1 or readings["humidity"] > 99:
+            readings["humidity"] = ''
+
         columns = ["ir_temp", "humidity_temp", "baro_temp", "ir", "humidity", "pressure", "light"]
         worksheet.append_row([datetime.datetime.now()] + [readings[col] for col in columns])
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
@@ -113,6 +114,7 @@ def append_readings(worksheet, readings):
 def main():
     print('Connecting to {}'.format(SENSORTAG_ADDRESS))
     tag = SensorTag(SENSORTAG_ADDRESS)
+    enable_sensors(tag)
     worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME, GDOCS_WORKSHEET_NAME)
 
     print('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
