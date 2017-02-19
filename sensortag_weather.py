@@ -15,7 +15,7 @@ SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
 GDOCS_WORKSHEET_NAME = "data"
-FREQUENCY_SECONDS = 55.5  # it takes about 4-5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 54.0  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
@@ -34,10 +34,23 @@ def enable_sensors(tag):
     # Not waiting here after enabling a sensor, the first read value might be empty or incorrect.
     time.sleep(1.0)
 
+def disable_sensors(tag):
+    """Disable sensors to improve battery life."""
+    tag.IRtemperature.disable()
+    tag.accelerometer.disable()
+    tag.humidity.disable()
+    tag.magnetometer.disable()
+    tag.barometer.disable()
+    tag.gyroscope.disable()
+    tag.keypress.disable()
+    tag.lightmeter.disable()
+    # tag.battery.disable()
+
 
 def get_readings(tag):
     """Get sensor readings and collate them in a dictionary."""
     try:
+        enable_sensors(tag)
         readings = {}
         # IR sensor
         readings["ir_temp"], readings["ir"] = tag.IRtemperature.read()
@@ -49,6 +62,7 @@ def get_readings(tag):
         readings["light"] = tag.lightmeter.read()
         # battery
         # readings["battery"] = tag.battery.read()
+        disable_sensors(tag)
 
         # round to 2 decimal places for all readings
         readings = {key: round(value, 2) for key, value in readings.items()}
@@ -63,7 +77,6 @@ def get_readings(tag):
 def reconnect(tag):
     try:
         tag.connect(tag.deviceAddr, tag.addrType)
-        enable_sensors(tag)
 
     except Exception as e:
         print("Unable to reconnect to SensorTag.")
@@ -114,7 +127,6 @@ def append_readings(worksheet, readings):
 def main():
     print('Connecting to {}'.format(SENSORTAG_ADDRESS))
     tag = SensorTag(SENSORTAG_ADDRESS)
-    enable_sensors(tag)
     worksheet = login_open_sheet(GDOCS_OAUTH_JSON, GDOCS_SPREADSHEET_NAME, GDOCS_WORKSHEET_NAME)
 
     print('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
