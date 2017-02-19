@@ -15,7 +15,7 @@ SENSORTAG_ADDRESS = "24:71:89:E6:AD:84"
 GDOCS_OAUTH_JSON = "raspberry-pi-sensortag-97386df66227.json"
 GDOCS_SPREADSHEET_NAME = "raspberry-pi-sensortag"
 GDOCS_WORKSHEET_NAME = "data"
-FREQUENCY_SECONDS = 54.4  # it takes about 4-5 seconds to obtain readings and upload to google sheets
+FREQUENCY_SECONDS = 55.5  # it takes about 4-5 seconds to obtain readings and upload to google sheets
 
 
 def enable_sensors(tag):
