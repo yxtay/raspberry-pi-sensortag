@@ -89,17 +89,17 @@ def login_open_sheet(oauth_key_file, spreadsheet_name, worksheet_name):
 
 
 def append_readings(worksheet, readings):
-    # Append the data in the spreadsheet, including a timestamp
+    """Append the data in the spreadsheet, including a timestamp."""
     try:
         # remove erroneous readings
-        if (readings["humidity_temp"] < readings["ir_temp"] - 5 or
-                    readings["humidity_temp"] > readings["ir_temp"] + 5):
+        if (readings["humidity_temp"] < readings["ir_temp"] - 2 or
+                    readings["humidity_temp"] > readings["ir_temp"] + 2):
             readings["humidity_temp"] = ''
         if readings["humidity"] < 1 or readings["humidity"] > 99:
             readings["humidity"] = ''
 
         columns = ["ir_temp", "humidity_temp", "baro_temp", "ir", "humidity", "pressure", "light"]
-        worksheet.append_row([datetime.datetime.now()] + [readings[col] for col in columns])
+        worksheet.append_row([datetime.datetime.now()] + [readings.get(col, '') for col in columns])
         print("Wrote a row to {0}".format(GDOCS_SPREADSHEET_NAME))
         return worksheet
 
